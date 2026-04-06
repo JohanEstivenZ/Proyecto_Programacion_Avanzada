@@ -1,0 +1,122 @@
+{
+  "info": {
+    "name": "TaskFlow API",
+    "description": "Coleccion completa para probar la API de TaskFlow.\n\n1. Ejecutar 'Login Developer' o el rol que necesites.\n2. El token se guarda automaticamente en {{token}}.\n3. Ejecutar el ciclo: Crear → Clasificar → Asignar → Iniciar → Revision → Completar → Archivar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080/api/v1"},
+    {"key": "token", "value": ""},
+    {"key": "tareaId", "value": ""},
+    {"key": "tareaVersion", "value": "0"},
+    {"key": "leadId", "value": ""}
+  ],
+  "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{token}}"}]},
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login Developer",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('token',pm.response.json().token)}"]}}],
+          "request": {"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"email\":\"ana@taskflow.dev\",\"password\":\"dev123\"}"},
+            "url":{"raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"]}}
+        },
+        {
+          "name": "Login Team Lead",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('token',pm.response.json().token)}"]}}],
+          "request": {"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"email\":\"pedro@taskflow.dev\",\"password\":\"lead123\"}"},
+            "url":{"raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"]}}
+        },
+        {
+          "name": "Login Admin",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('token',pm.response.json().token)}"]}}],
+          "request": {"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"email\":\"admin@taskflow.dev\",\"password\":\"admin123\"}"},
+            "url":{"raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"]}}
+        },
+        {
+          "name": "Registrar usuario",
+          "request": {"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"identificacion\":\"4001\",\n  \"nombre\":\"Nuevo Dev\",\n  \"email\":\"nuevo@taskflow.dev\",\n  \"password\":\"nuevo123\",\n  \"rol\":\"DEVELOPER\"\n}"},
+            "url":{"raw":"{{baseUrl}}/auth/registro","host":["{{baseUrl}}"],"path":["auth","registro"]}}
+        }
+      ]
+    },
+    {
+      "name": "Ciclo Completo",
+      "item": [
+        {
+          "name": "1. Crear tarea",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===201){var j=pm.response.json();pm.collectionVariables.set('tareaId',j.id);pm.collectionVariables.set('tareaVersion',j.version.toString())}"]}}],
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"titulo\":\"Corregir bug en el login\",\n  \"descripcion\":\"El boton de login no responde al hacer click en Safari. Reproducible en iOS 17.\"\n}"},
+            "url":{"raw":"{{baseUrl}}/tareas","host":["{{baseUrl}}"],"path":["tareas"]}}
+        },
+        {
+          "name": "2. Clasificar",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"version\":{{tareaVersion}},\n  \"categoria\":\"BUG\",\n  \"prioridad\":\"ALTA\"\n}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/clasificar","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","clasificar"]}}
+        },
+        {
+          "name": "3. Asignar",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"version\":{{tareaVersion}},\n  \"asignadoId\":\"{{leadId}}\"\n}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/asignar","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","asignar"]}}
+        },
+        {
+          "name": "4. Iniciar",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"version\":{{tareaVersion}}}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/iniciar","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","iniciar"]}}
+        },
+        {
+          "name": "5. Enviar a revision",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"version\":{{tareaVersion}}}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/revision","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","revision"]}}
+        },
+        {
+          "name": "6. Completar",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\"version\":{{tareaVersion}}}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/completar","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","completar"]}}
+        },
+        {
+          "name": "7. Archivar",
+          "event": [{"listen":"test","script":{"exec":["if(pm.response.code===200){pm.collectionVariables.set('tareaVersion',pm.response.json().version.toString())}"]}}],
+          "request": {"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"version\":{{tareaVersion}},\n  \"observacion\":\"Bug corregido y verificado en Safari iOS 17. Deploy exitoso.\"\n}"},
+            "url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}/archivar","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}","archivar"]}}
+        }
+      ]
+    },
+    {
+      "name": "Consultas",
+      "item": [
+        {"name": "Listar todas","request":{"method":"GET","url":{"raw":"{{baseUrl}}/tareas?page=0&size=20","host":["{{baseUrl}}"],"path":["tareas"],"query":[{"key":"page","value":"0"},{"key":"size","value":"20"}]}}},
+        {"name": "Filtrar por estado","request":{"method":"GET","url":{"raw":"{{baseUrl}}/tareas?estado=PENDIENTE","host":["{{baseUrl}}"],"path":["tareas"],"query":[{"key":"estado","value":"PENDIENTE"}]}}},
+        {"name": "Obtener por ID","request":{"method":"GET","url":{"raw":"{{baseUrl}}/tareas/{{tareaId}}","host":["{{baseUrl}}"],"path":["tareas","{{tareaId}}"]}}}
+      ]
+    },
+    {
+      "name": "IA",
+      "item": [
+        {"name": "Sugerir clasificacion","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+          "body":{"mode":"raw","raw":"{\"descripcion\":\"Hay un bug critico en produccion que hace crash la app al iniciar sesion\"}"},
+          "url":{"raw":"{{baseUrl}}/ia/sugerencias/clasificacion","host":["{{baseUrl}}"],"path":["ia","sugerencias","clasificacion"]}}},
+        {"name": "Generar resumen","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],
+          "body":{"mode":"raw","raw":"{\"tareaId\":\"{{tareaId}}\"}"},
+          "url":{"raw":"{{baseUrl}}/ia/resumen","host":["{{baseUrl}}"],"path":["ia","resumen"]}}}
+      ]
+    }
+  ]
+}

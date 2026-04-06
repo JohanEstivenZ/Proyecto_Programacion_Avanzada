@@ -1,0 +1,28 @@
+# === Gradle ===
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# === IDE ===
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+.classpath
+.project
+.settings/
+out/
+
+# === Sistema operativo ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Variables de entorno (NUNCA subir al repo) ===
+.env
+
+# === Logs ===
+*.log
+logs/

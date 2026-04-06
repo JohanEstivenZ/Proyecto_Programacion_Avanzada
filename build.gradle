@@ -1,0 +1,195 @@
+/*
+ * ============================================================================
+ * build.gradle — Archivo de configuración de Gradle
+ * ============================================================================
+ *
+ * Gradle es el sistema de construcción (build tool) del proyecto.
+ * Este archivo define:
+ *   1. Qué plugins usar (Spring Boot, Java, etc.)
+ *   2. Qué dependencias (librerías) necesita el proyecto.
+ *   3. Dónde descargarlas (repositorios Maven).
+ *   4. Cómo compilar y ejecutar los tests.
+ *
+ * Para ejecutar:
+ *   ./gradlew bootRun      → Arranca la aplicación.
+ *   ./gradlew test          → Ejecuta todos los tests.
+ *   ./gradlew build         → Compila + tests + genera el JAR.
+ *   ./gradlew dependencies  → Muestra el árbol de dependencias.
+ * ============================================================================
+ */
+
+plugins {
+    // Plugin de Java: habilita compilación de código Java.
+    id 'java'
+
+    // Plugin de Spring Boot: agrega tareas como bootRun y bootJar.
+    // bootRun arranca la app directamente; bootJar genera un JAR ejecutable.
+    id 'org.springframework.boot' version '3.3.5'
+
+    // Plugin de gestión de dependencias de Spring: alinea las versiones
+    // de TODAS las librerías de Spring para evitar conflictos.
+    // Si usas spring-boot-starter-web 3.3.5, este plugin se asegura
+    // de que spring-web, jackson, tomcat, etc. sean versiones compatibles.
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'co.edu.uniquindio'
+version = '1.0.0'
+
+// Java 21 — versión LTS (Long Term Support) más reciente.
+// LTS significa que recibe parches de seguridad por años.
+java {
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
+}
+
+configurations {
+    // Hace que las dependencias marcadas como compileOnly
+    // también se apliquen a los annotation processors.
+    // Necesario para que Lombok funcione correctamente.
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    // Maven Central: repositorio público donde viven casi todas las librerías Java.
+    // Gradle descarga los JARs de aquí automáticamente.
+    mavenCentral()
+
+    // Repositorio de Spring Milestones: contiene versiones pre-release
+    // de Spring AI (aún no está en Maven Central como versión estable).
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+// BOM (Bill of Materials) de Spring AI.
+// Un BOM es un archivo que define las versiones de TODAS las librerías
+// de un ecosistema, para que no tengas que especificar la versión de cada una.
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.ai:spring-ai-bom:1.0.0-M4'
+    }
+}
+
+dependencies {
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  SPRING BOOT STARTERS                                            ║
+    // ║  Un "starter" es un paquete que agrupa varias dependencias        ║
+    // ║  relacionadas. En vez de agregar 10 JARs individuales,            ║
+    // ║  agregas 1 starter y Spring Boot trae todo lo necesario.          ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // spring-boot-starter-web: Incluye Spring MVC, Jackson (JSON),
+    // Tomcat embebido, y todo lo necesario para crear APIs REST.
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // spring-boot-starter-data-jpa: Incluye Hibernate (ORM),
+    // Spring Data JPA (repositorios automáticos), HikariCP (pool de conexiones).
+    // ORM = Object-Relational Mapping: mapea clases Java a tablas SQL.
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // spring-boot-starter-validation: Incluye Hibernate Validator
+    // para validar DTOs con anotaciones como @NotNull, @Size, @Email.
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // spring-boot-starter-security: Incluye Spring Security para
+    // autenticación (quién eres) y autorización (qué puedes hacer).
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // spring-boot-starter-actuator: Expone endpoints de monitoreo
+    // como /actuator/health para saber si la app está viva.
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  SPRING AI — Integración con OpenAI                               ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // Starter de Spring AI para OpenAI. Autoconfigura un ChatClient
+    // que permite enviar prompts al API de OpenAI (GPT-4, etc.).
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  UTILIDADES                                                       ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // spring-dotenv: Carga variables de un archivo .env al entorno
+    // de Spring. Así no hardcodeas contraseñas en application.properties.
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+    // JJWT (Java JWT): Librería para crear y validar tokens JWT.
+    // Se divide en 3 artefactos: api (interfaces), impl (lógica), jackson (serialización).
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  LOMBOK — Eliminación de código repetitivo (boilerplate)          ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // Lombok genera getters, setters, constructores, builders, etc.
+    // en tiempo de compilación. El código fuente queda limpio.
+    //
+    // compileOnly: solo necesario para compilar, no va al JAR final.
+    // annotationProcessor: Lombok es un procesador de anotaciones
+    //   que modifica el bytecode durante la compilación.
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    testCompileOnly 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  SPRINGDOC OPENAPI — Documentación automática (Swagger UI)        ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // Genera documentación OpenAPI 3.0 a partir de los controllers.
+    // Accesible en: http://localhost:8080/api/v1/swagger-ui.html
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  BASES DE DATOS                                                   ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // MariaDB: driver JDBC para conectar con MariaDB en producción.
+    // runtimeOnly: solo necesario en tiempo de ejecución (Hibernate lo usa
+    // por reflection), no en compilación.
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+    // H2: base de datos embebida en memoria para desarrollo.
+    // No requiere instalar nada. Se borra al reiniciar la app.
+    runtimeOnly 'com.h2database:h2'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  DEVTOOLS — Herramientas de desarrollo                            ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // Habilita hot-reload: al guardar un archivo, la app se reinicia
+    // automáticamente sin necesidad de parar y volver a arrancar.
+    // developmentOnly: NO se incluye en el JAR de producción.
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // ╔════════════════════════════════════════════════════════════════════╗
+    // ║  TESTING                                                          ║
+    // ╚════════════════════════════════════════════════════════════════════╝
+
+    // Starter de test: incluye JUnit 5, Mockito, AssertJ, Spring Test,
+    // MockMvc, y otras herramientas para pruebas.
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Utilidades para testear Spring Security (WithMockUser, etc.)
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // H2 para tests (base de datos en memoria durante los tests).
+    testRuntimeOnly 'com.h2database:h2'
+
+    // Lombok también se necesita en los tests para las clases de test.
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    // Usa JUnit Platform (JUnit 5) como motor de tests.
+    // JUnit 5 = JUnit Jupiter: la versión moderna con soporte para
+    // @Nested, @DisplayName, @ParameterizedTest, etc.
+    useJUnitPlatform()
+}
