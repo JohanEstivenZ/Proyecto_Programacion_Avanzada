@@ -10,7 +10,7 @@ Proyecto de referencia para estudiantes del Programa de Ingenieria de Sistemas, 
 
 ```bash
 # 1. Clonar
-git clone <url-del-repo>
+git clone https://github.com/josealfredore2604/Proyecto-Base-Springboot.git
 cd taskflow-api
 
 # 2. Crear archivo de variables de entorno
