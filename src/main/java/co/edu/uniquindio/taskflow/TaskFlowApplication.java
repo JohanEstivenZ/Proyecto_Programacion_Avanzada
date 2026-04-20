@@ -1,7 +1,13 @@
 package co.edu.uniquindio.taskflow;
 
+import co.edu.uniquindio.taskflow.domain.enums.RolUsuario;
+import co.edu.uniquindio.taskflow.domain.model.Usuario;
+import co.edu.uniquindio.taskflow.repository.UsuarioRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Punto de entrada de la aplicacion TaskFlow.
@@ -39,5 +45,37 @@ public class TaskFlowApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TaskFlowApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner seedUsers(UsuarioRepository usuarioRepository,
+                                      PasswordEncoder passwordEncoder) {
+        return args -> {
+            if (usuarioRepository.count() == 0) {
+                usuarioRepository.save(Usuario.builder()
+                        .nombre("Admin")
+                        .email("admin@taskflow.dev")
+                        .password(passwordEncoder.encode("admin123"))
+                        .rol(RolUsuario.ADMIN)
+                        .activo(true)
+                        .build());
+
+                usuarioRepository.save(Usuario.builder()
+                        .nombre("Responsable")
+                        .email("pedro@taskflow.dev")
+                        .password(passwordEncoder.encode("lead123"))
+                        .rol(RolUsuario.RESPONSABLE)
+                        .activo(true)
+                        .build());
+
+                usuarioRepository.save(Usuario.builder()
+                        .nombre("Estudiante")
+                        .email("ana@taskflow.dev")
+                        .password(passwordEncoder.encode("dev123"))
+                        .rol(RolUsuario.ESTUDIANTE)
+                        .activo(true)
+                        .build());
+            }
+        };
     }
 }

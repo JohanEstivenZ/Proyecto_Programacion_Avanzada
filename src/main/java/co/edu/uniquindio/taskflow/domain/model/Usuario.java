@@ -32,6 +32,7 @@ public class Usuario {
     private RolUsuario rol;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean activo = true;
 
     public boolean isActivo() {

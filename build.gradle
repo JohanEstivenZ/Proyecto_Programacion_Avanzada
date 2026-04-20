@@ -39,6 +39,9 @@ version = '1.0.0'
 // Java 21 — versión LTS (Long Term Support) más reciente.
 // LTS significa que recibe parches de seguridad por años.
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
     sourceCompatibility = '21'
     targetCompatibility = '21'
 }
@@ -192,4 +195,29 @@ tasks.named('test') {
     // JUnit 5 = JUnit Jupiter: la versión moderna con soporte para
     // @Nested, @DisplayName, @ParameterizedTest, etc.
     useJUnitPlatform()
+}
+
+// --- TAREAS PARA INTEGRAR FRONTEND ANGULAR ---
+import org.gradle.api.tasks.Exec
+
+task buildFrontend(type: Exec) {
+    description = 'Construye el frontend Angular usando npm'
+    workingDir = file('frontend')
+    // Windows-friendly command
+    commandLine 'cmd', '/c', 'npm run build'
+}
+
+task copyFrontend(type: Copy, dependsOn: buildFrontend) {
+    description = 'Copia frontend/dist a src/main/resources/static'
+    from 'frontend/dist'
+    into 'src/main/resources/static'
+}
+
+tasks.named('bootJar') {
+    dependsOn copyFrontend
+}
+
+// Evitar dependencia implícita: asegurar que processResources ejecute copyFrontend
+tasks.named('processResources') {
+    dependsOn copyFrontend
 }
