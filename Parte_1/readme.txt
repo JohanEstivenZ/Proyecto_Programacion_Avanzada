@@ -1,1 +1,1 @@
-Todos los archivos de la parte 1 esta corregidos en el docuemnto
+Todos los archivos de la parte 1 esta corregidos en el docuemnto, se trabajo encima del proyecto dado para la estructura
