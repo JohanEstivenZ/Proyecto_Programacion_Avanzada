@@ -1,5 +1,7 @@
 package co.edu.uniquindio.taskflow.service;
 
+import co.edu.uniquindio.taskflow.domain.enums.RolUsuario;
+import co.edu.uniquindio.taskflow.domain.enums.RolUsuario;
 import co.edu.uniquindio.taskflow.domain.model.Usuario;
 import co.edu.uniquindio.taskflow.dto.request.UsuarioRequest;
 import co.edu.uniquindio.taskflow.dto.response.UsuarioResponse;
@@ -9,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import java.util.UUID;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +51,14 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"))
                 .getId();
+    }
+
+    public List<UsuarioResponse> buscarPorRol(String rol) {
+        RolUsuario rolUsuario = RolUsuario.valueOf(rol.toUpperCase());
+        return usuarioRepository.findByRolAndActivoTrue(rolUsuario)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     public UsuarioResponse mapToResponse(Usuario usuario) {
